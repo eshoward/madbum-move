@@ -3,8 +3,8 @@ title: "Where Might the Mighty MadBum Move?"
 author: "Evan Howard"
 date: "2023-04-20"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -70,6 +70,7 @@ kable(mb_df) %>%
   scroll_box(width = "100%", height = "115px")
   
 ```
+
 
 I chose his 2022 season because that is the last complete season, and I feel as though his stats for that season are indicative of where he is at currently. At the time of writing he is 0-3 with an ERA of 10.26, 10 strike outs, and a WHIP of 2.4. 
 
