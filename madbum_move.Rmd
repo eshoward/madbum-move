@@ -65,9 +65,12 @@ mb_df <- data.frame(Player = c("Madison Bumgarner"), Season = c("2022"),
                     WHIP = round((c(sum(fg_mad$BB)) + c(sum(fg_mad$H))) / c(sum(fg_mad$IP)),3),
                     Whiff = c(whiff))
 
-kable(mb_df) %>%
-  kable_styling("striped", full_width = TRUE) %>%
-  scroll_box(width = "100%", height = "115px")
+#kable(mb_df) %>%
+  #kable_styling("striped", full_width = TRUE) %>%
+  #scroll_box(width = "100%", height = "115px")
+
+kable(mb_df, booktabs = TRUE) %>%
+  kable_styling(latex_options = "scale_down")
   
 ```
 
