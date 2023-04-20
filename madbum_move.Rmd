@@ -1,0 +1,81 @@
+---
+title: "Where Might the Mighty MadBum Move?"
+author: "Evan Howard"
+date: "2023-04-20"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(baseballr)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(pitchRx)
+library(dplyr)
+library(formattable)
+library(reshape)
+```
+
+## MadBum's 2022 Season
+
+With the recent news that MadBum has been DFA by the Diamondbacks, I wanted to look at what teams might be interested in picking him up. All the data that I use is from [Baseball Reference](https://www.baseball-reference.com/players/b/bumgama01.shtml) and [Baseball Savant](https://baseballsavant.mlb.com/savant-player/madison-bumgarner-518516?stats=statcast-r-pitching-mlb). I'm still very new to R and I realize that much of my code could probably be done easier. Yet, with time and practice I know that I'll get there. As such, when it comes to the table below, the column named 'n' represents Whiff%.
+
+```{r, message=FALSE}
+playerid_lookup(last_name = "Bumgarner", first_name = "Madison")
+#bbref_id = bumgama01, fangraphs_id = 5524, retrosheet_id = bumgm001, mlbam_id = 518516
+
+madbum_pitching <- statcast_search_pitchers(start_date = "2022-03-01", 
+                                            end_date = "2023-04-19",
+                                             pitcherid = 518516)
+
+fg_mad <- baseballr::fg_pitcher_game_logs(playerid = 5524, year = "2022")
+
+#used to calculate whiff%
+swstrike <- madbum_pitching[grep("swinging_strike", 
+                                           madbum_pitching$description),]
+#used to calculate whiff%
+hit_into_play <- madbum_pitching[grep("hit_into_play", 
+                                       madbum_pitching$description), ]
+
+#used to calculate whiff%
+foul <- madbum_pitching[grep("foul", 
+                              madbum_pitching$description), ]
+
+#used to calculate whiff%
+foul_tip <- madbum_pitching[grep("foul_tip", 
+                                  madbum_pitching$description), ]
+#used to calculate whiff%
+whiff <- data.frame(round((count(swstrike)/(count(swstrike) + count(hit_into_play) + count(foul) +
+                           count(foul_tip))),3))
+
+mb_df <- data.frame(Player = c("Madison Bumgarner"), Season = c("2022"),
+                    W = c(sum(fg_mad$W)), L = c(sum(fg_mad$L)), 
+                    WLperc = round(c(sum(fg_mad$W))/ (c(sum(fg_mad$W)) + c(sum(fg_mad$L))),3),
+                    ERA = round(c((sum(fg_mad$ER)/sum(fg_mad$IP)*9)),2), G = c(sum(fg_mad$Games)),
+                    IP = c(sum(fg_mad$IP)), H = c(sum(fg_mad$H)), R = c(sum(fg_mad$R)), 
+                    ER = c(sum(fg_mad$ER)), HR = c(sum(fg_mad$HR)), BB = c(sum(fg_mad$BB)), 
+                    SO = c(sum(fg_mad$SO)), Kper9 = round(c(sum(fg_mad$SO)/(sum(fg_mad$IP)/9)),1), 
+                    BBper9 = round(c(sum(fg_mad$BB)/(sum(fg_mad$IP)/9)),1), 
+                    Hper9 = round(c(sum(fg_mad$H))/(sum(fg_mad$IP)/9),1), 
+                    KBBratio = round(c(sum(fg_mad$SO))/ c(sum(fg_mad$BB)),1),
+                    WHIP = round((c(sum(fg_mad$BB)) + c(sum(fg_mad$H))) / c(sum(fg_mad$IP)),3),
+                    Whiff = c(whiff))
+
+kable(mb_df) %>%
+  kable_styling("striped", full_width = TRUE) %>%
+  scroll_box(width = "100%", height = "115px")
+  
+```
+
+I chose his 2022 season because that is the last complete season, and I feel as though his stats for that season are indicative of where he is at currently. At the time of writing he is 0-3 with an ERA of 10.26, 10 strike outs, and a WHIP of 2.4. 
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
