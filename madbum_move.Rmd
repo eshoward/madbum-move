@@ -3,8 +3,8 @@ title: "Where Might the Mighty MadBum Move?"
 author: "Evan Howard"
 date: "2023-04-20"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -24,7 +24,7 @@ library(reshape)
 
 With the recent news that MadBum has been DFA by the Diamondbacks, I wanted to look at what teams might be interested in picking him up. All the data that I use is from [Baseball Reference](https://www.baseball-reference.com/players/b/bumgama01.shtml) and [Baseball Savant](https://baseballsavant.mlb.com/savant-player/madison-bumgarner-518516?stats=statcast-r-pitching-mlb). I'm still very new to R and I realize that much of my code could probably be done easier. Yet, with time and practice I know that I'll get there. As such, when it comes to the table below, the column named 'n' represents Whiff%.
 
-```{r, message=FALSE}
+```{r, message=FALSE, results = 'hide'}
 playerid_lookup(last_name = "Bumgarner", first_name = "Madison")
 #bbref_id = bumgama01, fangraphs_id = 5524, retrosheet_id = bumgm001, mlbam_id = 518516
 
@@ -32,8 +32,10 @@ madbum_pitching <- statcast_search_pitchers(start_date = "2022-03-01",
                                             end_date = "2023-04-19",
                                              pitcherid = 518516)
 
-fg_mad <- baseballr::fg_pitcher_game_logs(playerid = 5524, year = "2022")
+fg_mad <- baseballr::fg_pitcher_game_logs(playerid = 5524, year = "2023")
+```
 
+```{r, echo = FALSE}
 #used to calculate whiff%
 swstrike <- madbum_pitching[grep("swinging_strike", 
                                            madbum_pitching$description),]
@@ -52,7 +54,7 @@ foul_tip <- madbum_pitching[grep("foul_tip",
 whiff <- data.frame(round((count(swstrike)/(count(swstrike) + count(hit_into_play) + count(foul) +
                            count(foul_tip))),3))
 
-mb_df <- data.frame(Player = c("Madison Bumgarner"), Season = c("2022"),
+mb_df <- data.frame(Player = c("Madison Bumgarner"), Season = c("2023"),
                     W = c(sum(fg_mad$W)), L = c(sum(fg_mad$L)), 
                     WLperc = round(c(sum(fg_mad$W))/ (c(sum(fg_mad$W)) + c(sum(fg_mad$L))),3),
                     ERA = round(c((sum(fg_mad$ER)/sum(fg_mad$IP)*9)),2), G = c(sum(fg_mad$Games)),
@@ -65,21 +67,41 @@ mb_df <- data.frame(Player = c("Madison Bumgarner"), Season = c("2022"),
                     WHIP = round((c(sum(fg_mad$BB)) + c(sum(fg_mad$H))) / c(sum(fg_mad$IP)),3),
                     Whiff = c(whiff))
 
-#kable(mb_df) %>%
-  #kable_styling("striped", full_width = TRUE) %>%
-  #scroll_box(width = "100%", height = "115px")
+kable(mb_df) %>%
+  kable_styling("striped", full_width = TRUE) %>%
+  scroll_box(width = "100%", height = "115px")
 
-kable(mb_df, booktabs = TRUE) %>%
-  kable_styling(latex_options = "scale_down")
+##kable(mb_df, booktabs = TRUE) %>%
+  ##kable_styling(latex_options = "scale_down")
   
 ```
 
+I chose to focus on two teams, one from the American League and one from the National League. The AL team I chose is the Oakland A's and the NL team is the Cincinnati Reds (5 guys on IL, Luis Cessa 5 guy in 7 for ERA, Connor Overton on IL 10 for ERA, Levi Stoudt who is 4 in ERA is in the Minors).
 
-I chose his 2022 season because that is the last complete season, and I feel as though his stats for that season are indicative of where he is at currently. At the time of writing he is 0-3 with an ERA of 10.26, 10 strike outs, and a WHIP of 2.4. 
+```{r, results = 'hide'}
+ALSta <- data.frame(fg_team_pitcher(2023, 2023, league = "al", pitcher_type = "sta"))
+NLSta <- data.frame(fg_team_pitcher(2023, 2023, league = "nl", pitcher_type = "sta"))
+```
+## Oakland A's
+The Oakland A's are currently last in the AL West, and last in the AL with a 3-16 record. Their starting pitchers have gone 0-9 with a 8.59 ERA. On their 40-man roster they have 7 pitchers who are on the IL. Both [James Kaprielian](https://www.mlb.com/player/james-kaprielian-621076) and [Shintaro Fujinami](https://www.mlb.com/player/shintaro-fujinami-660261) are 0-2 and 0-3 with a 12.15 and 11.37 ERA, respectively. Currently, they rank eigth and eleventh in the league by largest ERA.
+```{r, echo=FALSE}
+OAK<- ALSta %>% filter(ALSta$Team == "OAK")
+OAK <- OAK[,c(1,3:7, 13, 15:19,24, 29:31,36:39,42)]
+
+colnames(OAK)[2] <- "Player"
+OAK$WLperc <- (OAK$W / (OAK$W + OAK$L))
+OAK <- OAK[,c(2,1,3:4, 22, 5:21)]
+OAK <- OAK[,c(-16:-18)]
+OAK <- OAK[,c(1:4, 6,7:19,5)]
+OAK <- OAK[,c(1:16, 18, 17, 19)]
+mb_df <- mb_df[,c(-20)]
+names(mb_df)[15:18] <- c("K_9", "BB_9", "H_9", "K_BB")
+
+kable(OAK) %>%
+  kable_styling("striped", full_width = TRUE) %>%
+  scroll_box(width = "100%", height = "90px")
 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
